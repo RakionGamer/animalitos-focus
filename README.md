@@ -21,13 +21,11 @@ La función utiliza `axios` para realizar una solicitud HTTP al sitio de resulta
 ```javascript
 const busquedaAnimales = async () => {
   try {
-    const response = await axios.get('https://m.parley.la/resultados/resultados-lotto-activo');
-    const $ = cheerio.load(response.data);
-    ...
-  } catch (error) {
-    throw new Error('Error en el fetch data');
-  }
-};
+    const response = await axios.get(
+      'https://centrodeapuestaselrey.com.ve/resultados/lotto-activo',
+      { headers: { 'User-Agent': 'Mozilla/5.0' } }
+    );
+
 ```
 ## 2. **Solicitud HTTP**
 ```javascript
