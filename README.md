@@ -21,17 +21,17 @@ La función utiliza `axios` para realizar una solicitud HTTP al sitio de resulta
 ```javascript
 const busquedaAnimales = async () => {
   try {
-    const response = await axios.get(
-      'https://centrodeapuestaselrey.com.ve/resultados/lotto-activo',
-      { headers: { 'User-Agent': 'Mozilla/5.0' } }
-    );
-
+    const response = await axios.get('https://m.parley.la/resultados/resultados-lotto-activo');
+    const $ = cheerio.load(response.data);
+    ...
+  } catch (error) {
+    throw new Error('Error en el fetch data');
+  }
+};
 ```
 ## 2. **Solicitud HTTP**
 ```javascript
-const response = await axios.get(
-      'https://centrodeapuestaselrey.com.ve/resultados/lotto-activo',
-      { headers: { 'User-Agent': 'Mozilla/5.0' } });
+const response = await axios.get('https://m.parley.la/resultados/resultados-lotto-activo');
 ```
 - **axios.get:** Realiza una solicitud GET a la URL que contiene los resultados.
 - **response.data:** Contiene el contenido HTML de la página.
@@ -44,24 +44,17 @@ const $ = cheerio.load(response.data);
 
 ## 4. **Extracción de Datos**
 ```javascript
-$('.lotery-result-list .thumbnail').each((i, el) => {
-      const hora = $(el).find('.hora').text().trim();
-      const animal = $(el).find('.text').text().trim();
-      if (!animal || animal === '-') return;
-
-      const imgSrc = $(el).find('img').attr('src') || '';
-      const match = imgSrc.match(/\/(\d+)_/); 
-      const numero = match ? match[1].padStart(2, '0') : '--';
-
-      resultados.push({
-        Hora: hora,
-        Numero: numero,
-        Animal: animal.toUpperCase(),
-        ImagenURL: imagenesLotto[numero] ||  imgSrc,
-        Fecha: fechaVenezuela,
-      });
-    });
+const resultados = [];
+$('.text-center.ui-content.ui-body-b.bordes_simple:not(.box-share-btn)').each((index, element) => {
+  let textoCompleto = $(element).text().trim();
+  textoCompleto = textoCompleto.replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim();
+  resultados.push(textoCompleto);
+});
 ```
+- **$('.selector'):** Selecciona elementos HTML relevantes, ejemplo: **.text-center.ui-content.ui-body-b.bordes_simple:not(.box-share-btn)**
+- **$(element).text():** Extrae el texto del elemento HTML.
+- **replace y trim:** Limpian el texto eliminando espacios y saltos de línea innecesarios.
+- **resultados.push:** Agrega cada resultado limpio al array resultados.
 
 ## 5. **Desglose y Formateo de Resultados**
 
@@ -117,50 +110,37 @@ throw new Error('Error en el fetch data');
 
 const busquedaAnimales = async () => {
   try {
-    const response = await axios.get(
-      'https://centrodeapuestaselrey.com.ve/resultados/lotto-activo',
-      { headers: { 'User-Agent': 'Mozilla/5.0' } }
-    );
-
-    if (response.status !== 200) throw new Error('Error al obtener la página');
-
+    const response = await axios.get('https://m.parley.la/resultados/resultados-lotto-activo');
     const $ = cheerio.load(response.data);
     const resultados = [];
-
-
-    const ahora = new Date();
-    const venezuelaUTCOffset = -4 * 60; // -4 horas en minutos
-    const localDate = new Date(ahora.getTime() + (venezuelaUTCOffset - ahora.getTimezoneOffset()) * 60000);
-    const dia = String(localDate.getDate()).padStart(2, '0');
-    const mes = String(localDate.getMonth() + 1).padStart(2, '0');
-    const año = localDate.getFullYear();
-    const fechaVenezuela = `${dia}-${mes}-${año}`;
-
-
-    $('.lotery-result-list .thumbnail').each((i, el) => {
-      const hora = $(el).find('.hora').text().trim();
-      const animal = $(el).find('.text').text().trim();
-      if (!animal || animal === '-') return;
-
-      const imgSrc = $(el).find('img').attr('src') || '';
-      const match = imgSrc.match(/\/(\d+)_/); 
-      const numero = match ? match[1].padStart(2, '0') : '--';
-
-      resultados.push({
-        Hora: hora,
-        Numero: numero,
-        Animal: animal.toUpperCase(),
-        ImagenURL: imagenesLotto[numero] ||  imgSrc,
-        Fecha: fechaVenezuela,
-      });
+    $('.text-center.ui-content.ui-body-b.bordes_simple:not(.box-share-btn)').each((index, element) => {
+      let textoCompleto = $(element).text().trim();
+      textoCompleto = textoCompleto.replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim();
+      resultados.push(textoCompleto);
     });
-
-    return resultados;
+    let regex = /Lotto Activo (\d{2}:\d{2} (am|pm)) Fecha: (\d{2}-\d{2}-\d{4}) (\d{2}) ([A-Za-z]+)/;
+    let resultadoDesglosado = resultados.map(texto => {
+      let match = texto.match(regex);
+      if (match) {
+        const numero = match[4];
+        const imagenURL = imagenesLotto[numero];
+        return {
+          Hora: match[1],
+          Fecha: match[3],
+          Numero: match[4],
+          Animal: match[5],
+          ImagenURL: imagenURL
+        };
+      } else {
+        return null;
+      }
+    }).filter(item => item !== null);  
+    return resultadoDesglosado;
   } catch (error) {
-    console.error('Error:', error.message);
-    return [];
+    throw new Error('Error en el fetch data');
   }
-};
+}
+
 ```
 
 **La función devuelve un array de objetos con el siguiente formato:**

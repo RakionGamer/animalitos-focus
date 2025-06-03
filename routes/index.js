@@ -61,18 +61,16 @@ router.get('/', async (req, res) => {
     });
 
 
-    
-
     let ultimaHora = ultimoResultado.Hora;
     console.log('Ultima hora: ', ultimaHora);
     let nuevaHora = ''
-    if(ultimaHora  == '07:00 pm'){
-      nuevaHora = '08:00 am'
+    if(ultimaHora  == '7:00 pm'){
+      nuevaHora = '8:00 am'
     }
-    else if(ultimaHora  == '08:00 am'){
+    else if(ultimaHora  == '8:00 am'){
       nuevaHora = '9:00 am'
     }
-    else if(ultimaHora  == '09:00 am'){
+    else if(ultimaHora  == '9:00 am'){
       nuevaHora = '10:00 am'
     }
     else if(ultimaHora  == '10:00 am'){
@@ -82,26 +80,26 @@ router.get('/', async (req, res) => {
       nuevaHora = '12:00 pm'
     }
     else if(ultimaHora  == '12:00 pm'){
-      nuevaHora = '01:00 pm'
+      nuevaHora = '1:00 pm'
     }
-    else if(ultimaHora  == '01:00 pm'){
-      nuevaHora = '02:00 pm'
+    else if(ultimaHora  == '1:00 pm'){
+      nuevaHora = '2:00 pm'
 
     }
-    else if(ultimaHora  == '02:00 pm'){
-      nuevaHora = '03:00 pm'
+    else if(ultimaHora  == '2:00 pm'){
+      nuevaHora = '3:00 pm'
     }
-    else if(ultimaHora  == '03:00 pm'){
-      nuevaHora = '04:00 pm'
+    else if(ultimaHora  == '3:00 pm'){
+      nuevaHora = '4:00 pm'
     }
-    else if(ultimaHora  == '04:00 pm'){
-      nuevaHora = '05:00 pm'
+    else if(ultimaHora  == '4:00 pm'){
+      nuevaHora = '5:00 pm'
     }
-    else if(ultimaHora  == '05:00 pm'){
-      nuevaHora = '06:00 pm'
+    else if(ultimaHora  == '5:00 pm'){
+      nuevaHora = '6:00 pm'
     }
-    else if(ultimaHora  == '06:00 pm'){
-      nuevaHora = '07:00 pm'
+    else if(ultimaHora  == '6:00 pm'){
+      nuevaHora = '7:00 pm'
     }
 
     const referenciaResultados = ref(db, 'resultados');

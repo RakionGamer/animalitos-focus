@@ -14,15 +14,13 @@ const busquedaAnimales = async () => {
     const $ = cheerio.load(response.data);
     const resultados = [];
 
-
     const ahora = new Date();
-    const venezuelaUTCOffset = -4 * 60; // -4 horas en minutos
+    const venezuelaUTCOffset = -4 * 60;
     const localDate = new Date(ahora.getTime() + (venezuelaUTCOffset - ahora.getTimezoneOffset()) * 60000);
     const dia = String(localDate.getDate()).padStart(2, '0');
     const mes = String(localDate.getMonth() + 1).padStart(2, '0');
     const año = localDate.getFullYear();
     const fechaVenezuela = `${dia}-${mes}-${año}`;
-
 
     $('.lotery-result-list .thumbnail').each((i, el) => {
       const hora = $(el).find('.hora').text().trim();
