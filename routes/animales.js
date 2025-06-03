@@ -5,7 +5,7 @@ const imagenesLotto = require('./imagenesAnimalitos');
 const busquedaAnimales = async () => {
   try {
     const response = await axios.get(
-      'https://www.lottoresultados.com/resultados/animalitos/lotto-activo',
+      'https://centrodeapuestaselrey.com.ve/resultados/lotto-activo',
       { headers: { 'User-Agent': 'Mozilla/5.0' } }
     );
 
@@ -14,51 +14,35 @@ const busquedaAnimales = async () => {
     const $ = cheerio.load(response.data);
     const resultados = [];
 
-    // Obtener fecha del encabezado
-    const fechaCompleta = $('h2 small').eq(1).text().trim();
-    const [_, dia, mes, año] = fechaCompleta.match(/(\d{1,2}) de (\w+) de (\d{4})/) || [];
 
-    const mesesES = {
-      'enero': '01', 'febrero': '02', 'marzo': '03', 'abril': '04',
-      'mayo': '05', 'junio': '06', 'julio': '07', 'agosto': '08',
-      'septiembre': '09', 'octubre': '10', 'noviembre': '11', 'diciembre': '12'
-    };
+    const ahora = new Date();
+    const venezuelaUTCOffset = -4 * 60; // -4 horas en minutos
+    const localDate = new Date(ahora.getTime() + (venezuelaUTCOffset - ahora.getTimezoneOffset()) * 60000);
+    const dia = String(localDate.getDate()).padStart(2, '0');
+    const mes = String(localDate.getMonth() + 1).padStart(2, '0');
+    const año = localDate.getFullYear();
+    const fechaVenezuela = `${dia}-${mes}-${año}`;
 
-    const mesNumero = mesesES[mes.toLowerCase()] || '00';
-    const fechaNormalizada = `${dia.padStart(2, '0')}-${mesNumero}-${año}`;
-    const contenedorPrincipal = $('#resultado-de-lotto-activo-de-hoy');
-    contenedorPrincipal.find('.step-content-wrapper').each((index, element) => {
-      const hora = $(element).find('h4').first().text().trim().toLowerCase();
-      const texto = $(element).find('p.step-text').text().trim();
 
-      if (['próximo', 'pendiente'].includes(texto.toLowerCase())) return;
+    $('.lotery-result-list .thumbnail').each((i, el) => {
+      const hora = $(el).find('.hora').text().trim();
+      const animal = $(el).find('.text').text().trim();
+      if (!animal || animal === '-') return;
 
-      const [numeroRaw, ...animalParts] = texto.split(' ');
-      const animal = animalParts.join(' ')
-        .toUpperCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
+      const imgSrc = $(el).find('img').attr('src') || '';
+      const match = imgSrc.match(/\/(\d+)_/); 
+      const numero = match ? match[1].padStart(2, '0') : '--';
 
-      let numero;
-      if (numeroRaw === '00') {
-        numero = '00'; // Caso Ballena
-      } else if (numeroRaw === '0' && animal === 'DELFIN') {
-        numero = '0';  // Caso Delfín
-      } else {
-        numero = numeroRaw.padStart(2, '0'); // Demás números
-      }
-
-      
       resultados.push({
-        Hora: hora.replace(/(am|pm)/, (match) => ` ${match.toUpperCase()}`),
+        Hora: hora,
         Numero: numero,
-        Animal: animal,
-        Fecha: fechaNormalizada,
-        ImagenURL: imagenesLotto[numero] || $(element).find('img').attr('src')
+        Animal: animal.toUpperCase(),
+        ImagenURL: imagenesLotto[numero] ||  imgSrc,
+        Fecha: fechaVenezuela,
       });
     });
 
-    return resultados.filter(item => item.Numero);
+    return resultados;
   } catch (error) {
     console.error('Error:', error.message);
     return [];
